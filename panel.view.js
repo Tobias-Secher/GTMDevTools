@@ -1,116 +1,257 @@
-import { createJsonTree } from './panel.jsonTree.js';
-import { copyJsonToClipboard, showCopyFeedback } from './panel.clipboard.js';
-import { state } from './panel.state.js';
+/**
+ * View rendering and DOM manipulation for the GTM Inspector DevTools panel
+ * Handles UI updates, event filtering, and dataLayer display
+ */
 
+import { createJsonTree } from './panel.jsonTree.js';
+import { state, resetState } from './panel.state.js';
+
+/**
+ * DOM element references for the panel interface
+ * Cached for performance and easy access throughout the module
+ */
 export const els = {
   statusEl: document.getElementById('status'),
   containerEl: document.getElementById('dataLayerContainer'),
   refreshBtn: document.getElementById('refreshBtn'),
   clearBtn: document.getElementById('clearBtn'),
-  // copyAllBtn: document.getElementById('copyAllBtn'), // Copy functionality disabled
   eventFilter: document.getElementById('eventFilter')
 };
 
+/**
+ * Template strings for common UI states
+ */
+const TEMPLATES = {
+  NO_DATA: `
+    <div class="no-data">
+      No dataLayer found. Make sure GTM is loaded on this page.
+    </div>
+  `,
+  CLEARED: `
+    <div class="no-data">
+      DataLayer cleared from display. Click refresh to reload.
+    </div>
+  `
+};
+
+/**
+ * Status message templates
+ */
+const STATUS_MESSAGES = {
+  CLEARED: 'Display cleared',
+  DATA_FOUND: (count) => `DataLayer found with ${count} items`,
+  FILTERED: (matched, total, event) => `Highlighting ${matched} of ${total} items for event "${event}"`
+};
+
+/**
+ * Displays the no data state in the container
+ */
 export function displayNoData() {
-  els.containerEl.innerHTML = `\n        <div class="no-data">\n            No dataLayer found. Make sure GTM is loaded on this page.\n        </div>\n    `;
+  els.containerEl.innerHTML = TEMPLATES.NO_DATA;
 }
 
+/**
+ * Clears the display and resets application state
+ * Shows a cleared message to the user
+ */
 export function clearDisplay() {
-  els.containerEl.innerHTML = `\n        <div class="no-data">\n            DataLayer cleared from display. Click refresh to reload.\n        </div>\n    `;
-  els.statusEl.textContent = 'Display cleared';
-  // Reset state
-  state.lastDataLayerHash = null;
-  state.currentDataLayer = [];
+  els.containerEl.innerHTML = TEMPLATES.CLEARED;
+  els.statusEl.textContent = STATUS_MESSAGES.CLEARED;
+  
+  // Reset application state
+  resetState();
   updateEventFilter([]);
 }
 
-export function updateEventFilter(dataLayer) {
+/**
+ * Extracts unique event names from dataLayer items
+ * @param {Array} dataLayer - The dataLayer array
+ * @returns {Set<string>} Set of unique event names
+ */
+function extractEventsFromDataLayer(dataLayer) {
   const events = new Set();
-  if (dataLayer && Array.isArray(dataLayer)) {
-    dataLayer.forEach(item => {
-      if (item && typeof item === 'object' && item.event && typeof item.event === 'string') {
-        events.add(item.event);
-      }
-    });
+  
+  if (!Array.isArray(dataLayer)) {
+    return events;
   }
+  
+  dataLayer.forEach(item => {
+    if (item && 
+        typeof item === 'object' && 
+        item.event && 
+        typeof item.event === 'string') {
+      events.add(item.event);
+    }
+  });
+  
+  return events;
+}
+
+/**
+ * Creates an option element for the event filter
+ * @param {string} eventName - The event name
+ * @returns {HTMLOptionElement} The option element
+ */
+function createEventOption(eventName) {
+  const option = document.createElement('option');
+  option.value = eventName;
+  option.textContent = eventName;
+  return option;
+}
+
+/**
+ * Updates the event filter dropdown with available events
+ * Preserves the current selection if it's still valid
+ * @param {Array} dataLayer - The dataLayer array to extract events from
+ */
+export function updateEventFilter(dataLayer) {
+  const events = extractEventsFromDataLayer(dataLayer);
   const currentSelection = els.eventFilter.value;
+  
+  // Clear and repopulate the filter
   els.eventFilter.innerHTML = '<option value="">All Events</option>';
+  
   const sortedEvents = Array.from(events).sort();
   sortedEvents.forEach(event => {
-    const option = document.createElement('option');
-    option.value = event;
-    option.textContent = event;
-    els.eventFilter.appendChild(option);
+    els.eventFilter.appendChild(createEventOption(event));
   });
+  
+  // Restore selection if still valid
   if (currentSelection && events.has(currentSelection)) {
     els.eventFilter.value = currentSelection;
   } else if (currentSelection && currentSelection !== '') {
     els.eventFilter.value = '';
   }
+  
   state.currentEvents = events;
 }
 
+/**
+ * Checks if a dataLayer item matches the current event filter
+ * @param {Object} item - The dataLayer item
+ * @param {string} selectedEvent - The selected event filter
+ * @returns {boolean} True if the item should be displayed
+ */
+function itemMatchesFilter(item, selectedEvent) {
+  if (!selectedEvent) return true;
+  
+  // Show items that match the event or items without event property
+  return item.event === selectedEvent || !item.hasOwnProperty('event');
+}
+
+/**
+ * Creates an event badge element for display
+ * @param {string} eventName - The event name
+ * @returns {HTMLElement} The badge element
+ */
+function createEventBadge(eventName) {
+  const badge = document.createElement('span');
+  badge.className = 'event-badge';
+  badge.style.cssText = 'background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px;';
+  badge.textContent = eventName;
+  return badge;
+}
+
+/**
+ * Creates the index header for a dataLayer item
+ * @param {number} index - The item index
+ * @param {string|undefined} eventName - The event name (if present)
+ * @returns {HTMLElement} The index element
+ */
+function createItemIndex(index, eventName) {
+  const indexEl = document.createElement('div');
+  indexEl.className = 'item-index';
+  
+  const indexContent = document.createElement('div');
+  indexContent.textContent = `[${index}]`;
+  
+  if (eventName) {
+    indexContent.appendChild(createEventBadge(eventName));
+  }
+  
+  indexEl.appendChild(indexContent);
+  return indexEl;
+}
+
+/**
+ * Creates the content area for a dataLayer item
+ * @param {Object} item - The dataLayer item
+ * @returns {HTMLElement} The content element
+ */
+function createItemContent(item) {
+  const contentEl = document.createElement('div');
+  contentEl.className = 'item-content';
+  
+  const jsonTree = createJsonTree(item);
+  contentEl.appendChild(jsonTree);
+  
+  return contentEl;
+}
+
+/**
+ * Creates a complete dataLayer item element
+ * @param {Object} item - The dataLayer item
+ * @param {number} index - The item index
+ * @param {boolean} matches - Whether the item matches current filter
+ * @returns {HTMLElement} The complete item element
+ */
+function createDataLayerItem(item, index, matches) {
+  const itemEl = document.createElement('div');
+  itemEl.className = 'datalayer-item';
+  
+  if (!matches) {
+    itemEl.classList.add('filtered-out');
+  }
+  
+  const indexEl = createItemIndex(index, item.event);
+  const contentEl = createItemContent(item);
+  
+  itemEl.appendChild(indexEl);
+  itemEl.appendChild(contentEl);
+  
+  return itemEl;
+}
+
+/**
+ * Updates the status bar with current display information
+ * @param {string} selectedEvent - The selected event filter
+ * @param {number} matchingCount - Number of items matching the filter
+ * @param {number} totalCount - Total number of items
+ */
+function updateStatusBar(selectedEvent, matchingCount, totalCount) {
+  if (selectedEvent && matchingCount !== totalCount) {
+    els.statusEl.textContent = STATUS_MESSAGES.FILTERED(matchingCount, totalCount, selectedEvent);
+  } else {
+    els.statusEl.textContent = STATUS_MESSAGES.DATA_FOUND(totalCount);
+  }
+}
+
+/**
+ * Displays the dataLayer items in the container
+ * Handles filtering, rendering, and status updates
+ * @param {Array} dataLayer - The dataLayer array to display
+ */
 export function displayDataLayer(dataLayer) {
   els.containerEl.innerHTML = '';
+  
   if (!dataLayer || dataLayer.length === 0) {
     displayNoData();
     return;
   }
+  
   const selectedEvent = els.eventFilter.value;
   let matchingCount = 0;
+  
+  // Create and append items
   dataLayer.forEach((item, index) => {
-    const itemEl = document.createElement('div');
-    itemEl.className = 'datalayer-item';
-    const itemMatches = !selectedEvent || item.event === selectedEvent || !item.hasOwnProperty('event');
-    if (itemMatches) {
-      matchingCount++;
-    } else {
-      itemEl.classList.add('filtered-out');
-    }
-    const indexEl = document.createElement('div');
-    indexEl.className = 'item-index';
-    const indexContent = document.createElement('div');
-    indexContent.textContent = `[${index}]`;
-    if (item.event) {
-      const eventBadge = document.createElement('span');
-      eventBadge.style.cssText = 'background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px;';
-      eventBadge.textContent = item.event;
-      indexContent.appendChild(eventBadge);
-    }
-    // Copy functionality disabled
-    // const copyBtn = document.createElement('button');
-    // copyBtn.className = 'copy-btn';
-    // copyBtn.textContent = 'Copy';
-    // copyBtn.title = 'Copy this item to clipboard';
-    // copyBtn.onclick = async () => {
-    //   const res = await copyJsonToClipboard(item);
-    //   showCopyFeedback(copyBtn, res.ok ? 'Copied!' : 'Failed', res.ok);
-    // };
-    indexEl.appendChild(indexContent);
-    // indexEl.appendChild(copyBtn);
-    const contentEl = document.createElement('div');
-    contentEl.className = 'item-content';
-    const jsonTree = createJsonTree(item);
-    contentEl.appendChild(jsonTree);
-    itemEl.appendChild(indexEl);
-    itemEl.appendChild(contentEl);
+    const matches = itemMatchesFilter(item, selectedEvent);
+    if (matches) matchingCount++;
+    
+    const itemEl = createDataLayerItem(item, index, matches);
     els.containerEl.appendChild(itemEl);
   });
-  const totalCount = dataLayer.length;
-  if (selectedEvent && matchingCount !== totalCount) {
-    els.statusEl.textContent = `Highlighting ${matchingCount} of ${totalCount} items for event "${selectedEvent}"`;
-  } else {
-    els.statusEl.textContent = `DataLayer found with ${totalCount} items`;
-  }
+  
+  // Update status and scroll to bottom
+  updateStatusBar(selectedEvent, matchingCount, dataLayer.length);
   els.containerEl.scrollTop = els.containerEl.scrollHeight;
 }
-
-// Copy functionality disabled
-// export async function copyEntireDataLayer() {
-//   if (!state.currentDataLayer || state.currentDataLayer.length === 0) {
-//     showCopyFeedback(els.copyAllBtn, 'No Data', false);
-//     return;
-//   }
-//   const res = await copyJsonToClipboard(state.currentDataLayer);
-//   showCopyFeedback(els.copyAllBtn, res.ok ? 'Copied!' : 'Failed', res.ok);
-// }

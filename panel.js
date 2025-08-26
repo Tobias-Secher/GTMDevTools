@@ -1,33 +1,87 @@
+/**
+ * Main panel script - Entry point for the GTM Inspector DevTools panel
+ * Handles DOM events, data refresh, and navigation monitoring
+ */
+
 import { els, displayDataLayer, displayNoData, updateEventFilter, clearDisplay } from './panel.view.js';
 import { refreshDataLayerFromPage } from './panel.data.js';
-import { state } from './panel.state.js';
+import { state, resetState } from './panel.state.js';
 
-// Wire DOM events
-els.refreshBtn.addEventListener('click', () => refreshDataLayerFromPage({
-    onNoData: () => { els.statusEl.textContent = 'No dataLayer found on this page'; displayNoData(); },
-    onDataFound: (res) => { updateEventFilter(res.data); els.statusEl.textContent = `DataLayer found with ${res.length} items`; displayDataLayer(res.data); }
-}));
+/**
+ * Configuration constants
+ */
+const CONFIG = {
+  NAVIGATION_DELAY: 1000, // Delay after navigation before refreshing data
+  STATUS_MESSAGES: {
+    NO_DATA: 'No dataLayer found on this page',
+    DATA_FOUND: (count) => `DataLayer found with ${count} items`
+  }
+};
 
-els.clearBtn.addEventListener('click', clearDisplay);
-// Copy functionality disabled
-// els.copyAllBtn.addEventListener('click', copyEntireDataLayer);
-els.eventFilter.addEventListener('change', () => {
-    if (state.currentDataLayer && state.currentDataLayer.length > 0) displayDataLayer(state.currentDataLayer);
-});
+/**
+ * Creates standardized callback handlers for data refresh operations
+ * @returns {Object} Object with onNoData and onDataFound callbacks
+ */
+function createDataRefreshCallbacks() {
+  return {
+    onNoData: () => {
+      els.statusEl.textContent = CONFIG.STATUS_MESSAGES.NO_DATA;
+      displayNoData();
+    },
+    onDataFound: (result) => {
+      updateEventFilter(result.data);
+      els.statusEl.textContent = CONFIG.STATUS_MESSAGES.DATA_FOUND(result.length);
+      displayDataLayer(result.data);
+    }
+  };
+}
 
-// Initial load
-refreshDataLayerFromPage({
-    onNoData: () => { els.statusEl.textContent = 'No dataLayer found on this page'; displayNoData(); },
-    onDataFound: (res) => { updateEventFilter(res.data); els.statusEl.textContent = `DataLayer found with ${res.length} items`; displayDataLayer(res.data); }
-});
+/**
+ * Handles manual refresh button click
+ */
+function handleRefreshClick() {
+  refreshDataLayerFromPage(createDataRefreshCallbacks());
+}
 
-// Listen for navigation changes
-chrome.devtools.network.onNavigated.addListener(function() {
-    state.lastDataLayerHash = null;
-    state.currentDataLayer = [];
-    updateEventFilter([]);
-    setTimeout(() => refreshDataLayerFromPage({
-        onNoData: () => { els.statusEl.textContent = 'No dataLayer found on this page'; displayNoData(); },
-        onDataFound: (res) => { updateEventFilter(res.data); els.statusEl.textContent = `DataLayer found with ${res.length} items`; displayDataLayer(res.data); }
-    }), 1000);
-});
+/**
+ * Handles event filter change
+ */
+function handleEventFilterChange() {
+  if (state.currentDataLayer && state.currentDataLayer.length > 0) {
+    displayDataLayer(state.currentDataLayer);
+  }
+}
+
+/**
+ * Handles navigation changes in the inspected window
+ * Resets state and refreshes data after a delay
+ */
+function handleNavigation() {
+  // Reset application state
+  resetState();
+  updateEventFilter([]);
+  
+  // Refresh data after a delay to allow page to load
+  setTimeout(() => {
+    refreshDataLayerFromPage(createDataRefreshCallbacks());
+  }, CONFIG.NAVIGATION_DELAY);
+}
+
+/**
+ * Initializes the panel by setting up event listeners and loading initial data
+ */
+function initializePanel() {
+  // Set up DOM event listeners
+  els.refreshBtn.addEventListener('click', handleRefreshClick);
+  els.clearBtn.addEventListener('click', clearDisplay);
+  els.eventFilter.addEventListener('change', handleEventFilterChange);
+  
+  // Set up navigation listener
+  chrome.devtools.network.onNavigated.addListener(handleNavigation);
+  
+  // Load initial data
+  refreshDataLayerFromPage(createDataRefreshCallbacks());
+}
+
+// Initialize the panel when script loads
+initializePanel();
