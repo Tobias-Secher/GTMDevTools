@@ -1,4 +1,4 @@
-import { els, displayDataLayer, displayNoData, updateEventFilter, clearDisplay, copyEntireDataLayer } from './panel.view.js';
+import { els, displayDataLayer, displayNoData, updateEventFilter, clearDisplay } from './panel.view.js';
 import { refreshDataLayerFromPage } from './panel.data.js';
 import { state } from './panel.state.js';
 
@@ -9,7 +9,8 @@ els.refreshBtn.addEventListener('click', () => refreshDataLayerFromPage({
 }));
 
 els.clearBtn.addEventListener('click', clearDisplay);
-els.copyAllBtn.addEventListener('click', copyEntireDataLayer);
+// Copy functionality disabled
+// els.copyAllBtn.addEventListener('click', copyEntireDataLayer);
 els.eventFilter.addEventListener('change', () => {
     if (state.currentDataLayer && state.currentDataLayer.length > 0) displayDataLayer(state.currentDataLayer);
 });

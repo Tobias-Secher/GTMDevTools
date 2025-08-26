@@ -7,7 +7,7 @@ export const els = {
   containerEl: document.getElementById('dataLayerContainer'),
   refreshBtn: document.getElementById('refreshBtn'),
   clearBtn: document.getElementById('clearBtn'),
-  copyAllBtn: document.getElementById('copyAllBtn'),
+  // copyAllBtn: document.getElementById('copyAllBtn'), // Copy functionality disabled
   eventFilter: document.getElementById('eventFilter')
 };
 
@@ -77,16 +77,17 @@ export function displayDataLayer(dataLayer) {
       eventBadge.textContent = item.event;
       indexContent.appendChild(eventBadge);
     }
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'copy-btn';
-    copyBtn.textContent = 'Copy';
-    copyBtn.title = 'Copy this item to clipboard';
-    copyBtn.onclick = async () => {
-      const res = await copyJsonToClipboard(item);
-      showCopyFeedback(copyBtn, res.ok ? 'Copied!' : 'Failed', res.ok);
-    };
+    // Copy functionality disabled
+    // const copyBtn = document.createElement('button');
+    // copyBtn.className = 'copy-btn';
+    // copyBtn.textContent = 'Copy';
+    // copyBtn.title = 'Copy this item to clipboard';
+    // copyBtn.onclick = async () => {
+    //   const res = await copyJsonToClipboard(item);
+    //   showCopyFeedback(copyBtn, res.ok ? 'Copied!' : 'Failed', res.ok);
+    // };
     indexEl.appendChild(indexContent);
-    indexEl.appendChild(copyBtn);
+    // indexEl.appendChild(copyBtn);
     const contentEl = document.createElement('div');
     contentEl.className = 'item-content';
     const jsonTree = createJsonTree(item);
@@ -104,11 +105,12 @@ export function displayDataLayer(dataLayer) {
   els.containerEl.scrollTop = els.containerEl.scrollHeight;
 }
 
-export async function copyEntireDataLayer() {
-  if (!state.currentDataLayer || state.currentDataLayer.length === 0) {
-    showCopyFeedback(els.copyAllBtn, 'No Data', false);
-    return;
-  }
-  const res = await copyJsonToClipboard(state.currentDataLayer);
-  showCopyFeedback(els.copyAllBtn, res.ok ? 'Copied!' : 'Failed', res.ok);
-}
+// Copy functionality disabled
+// export async function copyEntireDataLayer() {
+//   if (!state.currentDataLayer || state.currentDataLayer.length === 0) {
+//     showCopyFeedback(els.copyAllBtn, 'No Data', false);
+//     return;
+//   }
+//   const res = await copyJsonToClipboard(state.currentDataLayer);
+//   showCopyFeedback(els.copyAllBtn, res.ok ? 'Copied!' : 'Failed', res.ok);
+// }
