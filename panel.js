@@ -125,13 +125,16 @@ function createJsonTree(data, key = null, isLast = true) {
         data.forEach((item, index) => {
             const itemEl = createJsonTree(item, null, index === data.length - 1);
             itemEl.className += ' json-item';
-            content.appendChild(itemEl);
             
+            // Add comma directly to the item if not the last one
             if (index < data.length - 1) {
-                const comma = document.createElement('span');
-                comma.textContent = ',';
-                content.appendChild(comma);
+                const lastTextNode = findLastTextNode(itemEl);
+                if (lastTextNode) {
+                    lastTextNode.textContent += ',';
+                }
             }
+            
+            content.appendChild(itemEl);
         });
         
         const closeBracket = document.createElement('div');
@@ -167,13 +170,16 @@ function createJsonTree(data, key = null, isLast = true) {
         keys.forEach((objKey, index) => {
             const propertyEl = createJsonTree(data[objKey], objKey, index === keys.length - 1);
             propertyEl.className += ' json-property';
-            content.appendChild(propertyEl);
             
+            // Add comma directly to the property if not the last one
             if (index < keys.length - 1) {
-                const comma = document.createElement('span');
-                comma.textContent = ',';
-                content.appendChild(comma);
+                const lastTextNode = findLastTextNode(propertyEl);
+                if (lastTextNode) {
+                    lastTextNode.textContent += ',';
+                }
             }
+            
+            content.appendChild(propertyEl);
         });
         
         const closeBrace = document.createElement('div');
@@ -217,6 +223,40 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function findLastTextNode(element) {
+    // Find the last text node or span that contains actual content
+    const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_ALL,
+        null,
+        false
+    );
+    
+    let lastContentNode = null;
+    let node;
+    
+    while (node = walker.nextNode()) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+            lastContentNode = node;
+        } else if (node.nodeType === Node.ELEMENT_NODE && 
+                   (node.classList.contains('json-string') || 
+                    node.classList.contains('json-number') || 
+                    node.classList.contains('json-boolean') || 
+                    node.classList.contains('json-null') ||
+                    node.classList.contains('json-bracket'))) {
+            // For collapsed objects/arrays, we want to add comma after the preview
+            if (element.classList.contains('json-collapsed') && 
+                node.classList.contains('json-collapsed')) {
+                lastContentNode = node;
+            } else if (!element.classList.contains('json-collapsed')) {
+                lastContentNode = node;
+            }
+        }
+    }
+    
+    return lastContentNode;
 }
 
 function displayNoData() {
