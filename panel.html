@@ -25,6 +25,30 @@
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-section {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .filter-section label {
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .filter-section select {
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            min-width: 150px;
         }
         
         button {
@@ -56,6 +80,13 @@
         .datalayer-item {
             border-bottom: 1px solid #eee;
             padding: 12px;
+            transition: opacity 0.2s ease, filter 0.2s ease;
+        }
+        
+        .datalayer-item.filtered-out {
+            opacity: 0.3;
+            filter: grayscale(100%);
+            background-color: #fafafa;
         }
         
         .datalayer-item:last-child {
@@ -179,6 +210,13 @@
         <button id="refreshBtn">Refresh</button>
         <button id="clearBtn">Clear</button>
         <button id="autoRefreshBtn" class="active">Auto-refresh</button>
+        
+        <div class="filter-section">
+            <label for="eventFilter">Filter by Event:</label>
+            <select id="eventFilter">
+                <option value="">All Events</option>
+            </select>
+        </div>
     </div>
     
     <div class="datalayer-container" id="dataLayerContainer">
