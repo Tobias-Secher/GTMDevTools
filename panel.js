@@ -1,5 +1,3 @@
-let autoRefresh = true;
-let refreshInterval;
 let lastDataLayerHash = null;
 let currentDataLayer = [];
 let currentEvents = new Set();
@@ -8,18 +6,15 @@ const statusEl = document.getElementById('status');
 const containerEl = document.getElementById('dataLayerContainer');
 const refreshBtn = document.getElementById('refreshBtn');
 const clearBtn = document.getElementById('clearBtn');
-const autoRefreshBtn = document.getElementById('autoRefreshBtn');
 const eventFilter = document.getElementById('eventFilter');
 
 // Button event listeners
 refreshBtn.addEventListener('click', refreshDataLayer);
 clearBtn.addEventListener('click', clearDisplay);
-autoRefreshBtn.addEventListener('click', toggleAutoRefresh);
 eventFilter.addEventListener('change', filterByEvent);
 
 // Initialize
 refreshDataLayer();
-// startAutoRefresh();
 
 function refreshDataLayer() {
     // Execute script in the inspected page to get dataLayer
