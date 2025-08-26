@@ -119,7 +119,9 @@ export function updateEventFilter(dataLayer) {
   // Clear and repopulate the filter
   els.eventFilter.innerHTML = '<option value="">All Events</option>';
   
-  const sortedEvents = Array.from(events).sort();
+  const sortedEvents = Array.from(events).sort((a, b) => 
+    a.toLowerCase().localeCompare(b.toLowerCase())
+  );
   sortedEvents.forEach(event => {
     els.eventFilter.appendChild(createEventOption(event));
   });
