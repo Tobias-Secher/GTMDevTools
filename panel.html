@@ -98,6 +98,30 @@
             color: #666;
             font-size: 12px;
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .copy-btn {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            color: #666;
+            margin-left: 8px;
+        }
+        
+        .copy-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .copy-btn.copied {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
         }
         
         .item-content {
@@ -209,6 +233,7 @@
     <div class="controls">
         <button id="refreshBtn">Refresh</button>
         <button id="clearBtn">Clear</button>
+        <button id="copyAllBtn">Copy All</button>
         
         <div class="filter-section">
             <label for="eventFilter">Filter by Event:</label>

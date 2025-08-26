@@ -6,11 +6,13 @@ const statusEl = document.getElementById('status');
 const containerEl = document.getElementById('dataLayerContainer');
 const refreshBtn = document.getElementById('refreshBtn');
 const clearBtn = document.getElementById('clearBtn');
+const copyAllBtn = document.getElementById('copyAllBtn');
 const eventFilter = document.getElementById('eventFilter');
 
 // Button event listeners
 refreshBtn.addEventListener('click', refreshDataLayer);
 clearBtn.addEventListener('click', clearDisplay);
+copyAllBtn.addEventListener('click', copyEntireDataLayer);
 eventFilter.addEventListener('change', filterByEvent);
 
 // Initialize
@@ -99,15 +101,27 @@ function displayDataLayer(dataLayer) {
         
         const indexEl = document.createElement('div');
         indexEl.className = 'item-index';
-        indexEl.textContent = `[${index}]`;
+        
+        const indexContent = document.createElement('div');
+        indexContent.textContent = `[${index}]`;
         
         // Add event badge if item has an event
         if (item.event) {
             const eventBadge = document.createElement('span');
             eventBadge.style.cssText = 'background: #007acc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px;';
             eventBadge.textContent = item.event;
-            indexEl.appendChild(eventBadge);
+            indexContent.appendChild(eventBadge);
         }
+        
+        // Add copy button for individual item
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = 'Copy';
+        copyBtn.title = 'Copy this item to clipboard';
+        copyBtn.onclick = () => copyIndividualItem(item, copyBtn, index);
+        
+        indexEl.appendChild(indexContent);
+        indexEl.appendChild(copyBtn);
         
         const contentEl = document.createElement('div');
         contentEl.className = 'item-content';
@@ -411,6 +425,55 @@ function filterByEvent() {
     if (currentDataLayer.length > 0) {
         displayDataLayer(currentDataLayer);
     }
+}
+
+function copyEntireDataLayer() {
+    if (!currentDataLayer || currentDataLayer.length === 0) {
+        showCopyFeedback(copyAllBtn, 'No Data', false);
+        return;
+    }
+    
+    try {
+        const jsonString = JSON.stringify(currentDataLayer, null, 2);
+        navigator.clipboard.writeText(jsonString).then(() => {
+            showCopyFeedback(copyAllBtn, 'Copied!', true);
+        }).catch(err => {
+            console.error('Failed to copy to clipboard:', err);
+            showCopyFeedback(copyAllBtn, 'Failed', false);
+        });
+    } catch (error) {
+        console.error('Failed to serialize dataLayer:', error);
+        showCopyFeedback(copyAllBtn, 'Error', false);
+    }
+}
+
+function copyIndividualItem(item, button, index) {
+    try {
+        const jsonString = JSON.stringify(item, null, 2);
+        navigator.clipboard.writeText(jsonString).then(() => {
+            showCopyFeedback(button, 'Copied!', true);
+        }).catch(err => {
+            console.error('Failed to copy to clipboard:', err);
+            showCopyFeedback(button, 'Failed', false);
+        });
+    } catch (error) {
+        console.error('Failed to serialize item:', error);
+        showCopyFeedback(button, 'Error', false);
+    }
+}
+
+function showCopyFeedback(button, message, success) {
+    const originalText = button.textContent;
+    button.textContent = message;
+    
+    if (success) {
+        button.classList.add('copied');
+    }
+    
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.classList.remove('copied');
+    }, 1500);
 }
 
 function createDataLayerHash(dataLayer) {
