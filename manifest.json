@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "GTM DataLayer Inspector",
+  "version": "1.1.1",
+  "description": "Inspect GTM dataLayer in Chrome DevTools",
+  "permissions": [
+    "activeTab"
+  ],
+  "devtools_page": "devtools.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected-script.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
