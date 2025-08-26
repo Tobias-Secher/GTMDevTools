@@ -12,7 +12,7 @@ import { state, resetState } from './panel.state.js';
  */
 export const els = {
   statusEl: document.getElementById('status'),
-  containerEl: document.getElementById('dataLayerContainer'),
+  containerEl: document.getElementById('gtmContainer'),
   refreshBtn: document.getElementById('refreshBtn'),
   clearBtn: document.getElementById('clearBtn'),
   eventFilter: document.getElementById('eventFilter')
@@ -25,7 +25,7 @@ const TEMPLATES = {
   NO_DATA: `
     <div class="empty-state" role="alert">
       <div class="empty-state__icon">📊</div>
-      <h3 class="empty-state__title">No dataLayer found</h3>
+      <h3 class="empty-state__title">No GTM found</h3>
       <p class="empty-state__message">
         Make sure Google Tag Manager is loaded on this page, then click refresh.
       </p>
@@ -36,7 +36,7 @@ const TEMPLATES = {
       <div class="empty-state__icon">🗑️</div>
       <h3 class="empty-state__title">Display cleared</h3>
       <p class="empty-state__message">
-        DataLayer cleared from display. Click refresh to reload.
+        GTM cleared from display. Click refresh to reload.
       </p>
     </div>
   `
@@ -47,7 +47,7 @@ const TEMPLATES = {
  */
 const STATUS_MESSAGES = {
   CLEARED: 'Display cleared',
-  DATA_FOUND: (count) => `DataLayer found with ${count} items`,
+  DATA_FOUND: (count) => `GTM found with ${count} items`,
   FILTERED: (matched, total, event) => `Highlighting ${matched} of ${total} items for event "${event}"`
 };
 
@@ -197,15 +197,15 @@ function createItemContent(item) {
 }
 
 /**
- * Creates a complete dataLayer item element
- * @param {Object} item - The dataLayer item
+ * Creates a complete GTM item element
+ * @param {Object} item - The GTM item
  * @param {number} index - The item index
  * @param {boolean} matches - Whether the item matches current filter
  * @returns {HTMLElement} The complete item element
  */
-function createDataLayerItem(item, index, matches) {
+function createGTMItem(item, index, matches) {
   const itemEl = document.createElement('div');
-  itemEl.className = 'datalayer-item';
+  itemEl.className = 'gtm-item';
   
   if (!matches) {
     itemEl.classList.add('filtered-out');
@@ -246,7 +246,7 @@ function scrollToFirstMatchingItem(selectedEvent) {
   }
   
   // Find the first visible (matching) item
-  const firstMatchingItem = els.containerEl.querySelector('.datalayer-item:not(.filtered-out)');
+  const firstMatchingItem = els.containerEl.querySelector('.gtm-item:not(.filtered-out)');
   
   if (firstMatchingItem) {
     // Scroll to the first matching item with smooth behavior
@@ -286,7 +286,7 @@ export function displayDataLayer(dataLayer) {
       }
     }
     
-    const itemEl = createDataLayerItem(item, index, matches);
+    const itemEl = createGTMItem(item, index, matches);
     els.containerEl.appendChild(itemEl);
   });
   

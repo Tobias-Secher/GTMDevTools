@@ -13,8 +13,8 @@ import { state, resetState } from './panel.state.js';
 const CONFIG = {
   NAVIGATION_DELAY: 1000, // Delay after navigation before refreshing data
   STATUS_MESSAGES: {
-    NO_DATA: 'No dataLayer found on this page',
-    DATA_FOUND: (count) => `DataLayer found with ${count} items`
+    NO_DATA: 'No GTM found on this page',
+    DATA_FOUND: (count) => `GTM found with ${count} items`
   }
 };
 
