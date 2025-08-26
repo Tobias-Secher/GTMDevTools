@@ -209,6 +209,10 @@ button:hover {
     display: none;
 }
 
+.json-comma {
+    color: black;
+}
+
 .no-data {
     text-align: center;
     padding: 40px;

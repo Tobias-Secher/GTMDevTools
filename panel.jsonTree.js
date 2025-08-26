@@ -52,7 +52,16 @@ export function createJsonTree(data, key = null, isLast = true) {
       itemEl.className += ' json-item';
       if (index < data.length - 1) {
         const lastTextNode = findLastTextNode(itemEl);
-        if (lastTextNode) lastTextNode.textContent += ',';
+        if (lastTextNode) {
+          const commaSpan = document.createElement('span');
+          commaSpan.className = 'json-comma';
+          commaSpan.textContent = ',';
+          if (lastTextNode.nodeType === Node.TEXT_NODE) {
+            lastTextNode.parentNode.appendChild(commaSpan);
+          } else {
+            lastTextNode.appendChild(commaSpan);
+          }
+        }
       }
       content.appendChild(itemEl);
     });
@@ -82,7 +91,16 @@ export function createJsonTree(data, key = null, isLast = true) {
       propertyEl.className += ' json-property';
       if (index < keys.length - 1) {
         const lastTextNode = findLastTextNode(propertyEl);
-        if (lastTextNode) lastTextNode.textContent += ',';
+        if (lastTextNode) {
+          const commaSpan = document.createElement('span');
+          commaSpan.className = 'json-comma';
+          commaSpan.textContent = ',';
+          if (lastTextNode.nodeType === Node.TEXT_NODE) {
+            lastTextNode.parentNode.appendChild(commaSpan);
+          } else {
+            lastTextNode.appendChild(commaSpan);
+          }
+        }
       }
       content.appendChild(propertyEl);
     });
