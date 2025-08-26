@@ -14,7 +14,8 @@ autoRefreshBtn.addEventListener('click', toggleAutoRefresh);
 
 // Initialize
 refreshDataLayer();
-startAutoRefresh();
+// Enable auto-refresh by default
+// startAutoRefresh();
 
 function refreshDataLayer() {
     // Execute script in the inspected page to get dataLayer
@@ -64,7 +65,7 @@ function displayDataLayer(dataLayer) {
         
         const indexEl = document.createElement('div');
         indexEl.className = 'item-index';
-        indexEl.textContent = `[${index}]`;
+        indexEl.textContent = `[${index}] ${item.event ? `(event: ${item.event})` : ''}`;
         
         const contentEl = document.createElement('div');
         contentEl.className = 'item-content';
