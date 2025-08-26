@@ -23,13 +23,21 @@ export const els = {
  */
 const TEMPLATES = {
   NO_DATA: `
-    <div class="no-data">
-      No dataLayer found. Make sure GTM is loaded on this page.
+    <div class="empty-state" role="alert">
+      <div class="empty-state__icon">📊</div>
+      <h3 class="empty-state__title">No dataLayer found</h3>
+      <p class="empty-state__message">
+        Make sure Google Tag Manager is loaded on this page, then click refresh.
+      </p>
     </div>
   `,
   CLEARED: `
-    <div class="no-data">
-      DataLayer cleared from display. Click refresh to reload.
+    <div class="empty-state" role="alert">
+      <div class="empty-state__icon">🗑️</div>
+      <h3 class="empty-state__title">Display cleared</h3>
+      <p class="empty-state__message">
+        DataLayer cleared from display. Click refresh to reload.
+      </p>
     </div>
   `
 };

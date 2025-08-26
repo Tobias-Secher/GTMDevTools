@@ -1,36 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>GTM Inspector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTM Inspector - DataLayer Inspector</title>
+    <meta name="description" content="Chrome DevTools extension for inspecting Google Tag Manager dataLayer">
     <link rel="stylesheet" href="panel.css">
 </head>
 <body>
-    <div class="header">
-        <h2>GTM Inspector</h2>
-    </div>
+    <!-- Application Header -->
+    <header class="panel-header">
+        <h1 class="panel-title">GTM Inspector</h1>
+    </header>
     
-    <div class="status" id="status">Waiting for dataLayer...</div>
+    <!-- Status Information -->
+    <section class="status-section">
+        <div class="status-indicator" id="status" role="status" aria-live="polite">
+            Waiting for dataLayer...
+        </div>
+    </section>
     
-    <div class="controls">
-        <button id="refreshBtn">Refresh</button>
-        <button id="clearBtn">Clear</button>
-        <!-- <button id="copyAllBtn">Copy All</button> -->
+    <!-- Control Panel -->
+    <section class="controls-section" role="toolbar" aria-label="DataLayer controls">
+        <div class="action-controls">
+            <button 
+                id="refreshBtn" 
+                type="button"
+                class="control-button control-button--primary"
+                aria-label="Refresh dataLayer data from current page"
+                title="Refresh dataLayer">
+                Refresh
+            </button>
+            
+            <button 
+                id="clearBtn" 
+                type="button"
+                class="control-button control-button--secondary"
+                aria-label="Clear displayed dataLayer items"
+                title="Clear display">
+                Clear
+            </button>
+        </div>
         
-        <div class="filter-section">
-            <label for="eventFilter">Filter by Event:</label>
-            <select id="eventFilter">
+        <!-- Event Filtering -->
+        <div class="filter-controls">
+            <label for="eventFilter" class="filter-label">Filter by Event:</label>
+            <select 
+                id="eventFilter" 
+                class="filter-select"
+                aria-label="Filter dataLayer items by event type">
                 <option value="">All Events</option>
             </select>
         </div>
-    </div>
+    </section>
     
-    <div class="datalayer-container" id="dataLayerContainer">
-        <div class="no-data">
-            No dataLayer found. Make sure GTM is loaded on this page.
+    <!-- Main Content Area -->
+    <main class="content-main">
+        <div 
+            class="datalayer-container" 
+            id="dataLayerContainer"
+            role="region"
+            aria-label="DataLayer items"
+            tabindex="0">
+            
+            <!-- Default no data state -->
+            <div class="empty-state" role="alert">
+                <div class="empty-state__icon">📊</div>
+                <h3 class="empty-state__title">No dataLayer found</h3>
+                <p class="empty-state__message">
+                    Make sure Google Tag Manager is loaded on this page, then click refresh.
+                </p>
+            </div>
         </div>
-    </div>
+    </main>
 
+    <!-- Application Script -->
     <script type="module" src="panel.js"></script>
 </body>
 </html>
