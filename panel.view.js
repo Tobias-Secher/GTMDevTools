@@ -235,6 +235,30 @@ function updateStatusBar(selectedEvent, matchingCount, totalCount) {
 }
 
 /**
+ * Scrolls to the first matching item in the container
+ * @param {string} selectedEvent - The selected event filter
+ */
+function scrollToFirstMatchingItem(selectedEvent) {
+  if (!selectedEvent) {
+    // If no filter, scroll to top
+    els.containerEl.scrollTop = 0;
+    return;
+  }
+  
+  // Find the first visible (matching) item
+  const firstMatchingItem = els.containerEl.querySelector('.datalayer-item:not(.filtered-out)');
+  
+  if (firstMatchingItem) {
+    // Scroll to the first matching item with smooth behavior
+    firstMatchingItem.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest'
+    });
+  }
+}
+
+/**
  * Displays the dataLayer items in the container
  * Handles filtering, rendering, and status updates
  * @param {Array} dataLayer - The dataLayer array to display
@@ -249,17 +273,39 @@ export function displayDataLayer(dataLayer) {
   
   const selectedEvent = els.eventFilter.value;
   let matchingCount = 0;
+  let firstMatchingElement = null;
   
   // Create and append items
   dataLayer.forEach((item, index) => {
     const matches = itemMatchesFilter(item, selectedEvent);
-    if (matches) matchingCount++;
+    if (matches) {
+      matchingCount++;
+      // Store reference to the first matching element
+      if (!firstMatchingElement) {
+        firstMatchingElement = { item, index };
+      }
+    }
     
     const itemEl = createDataLayerItem(item, index, matches);
     els.containerEl.appendChild(itemEl);
   });
   
-  // Update status and scroll to bottom
+  // Update status bar
   updateStatusBar(selectedEvent, matchingCount, dataLayer.length);
-  els.containerEl.scrollTop = els.containerEl.scrollHeight;
+  
+  // Handle scrolling behavior
+  if (selectedEvent && firstMatchingElement) {
+    // When filtering, scroll to first matching item after DOM update
+    setTimeout(() => scrollToFirstMatchingItem(selectedEvent), 0);
+  } else if (!selectedEvent) {
+    // When showing all items, scroll to top
+    setTimeout(() => {
+      els.containerEl.scrollTop = 0;
+    }, 0);
+  } else {
+    // Default scroll to bottom (for new data without filter)
+    setTimeout(() => {
+      els.containerEl.scrollTop = els.containerEl.scrollHeight;
+    }, 0);
+  }
 }

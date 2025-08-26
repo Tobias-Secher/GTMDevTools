@@ -215,6 +215,7 @@ body {
   max-height: var(--container-max-height);
   overflow: auto;
   position: relative;
+  scroll-behavior: smooth;
 }
 
 .datalayer-container:focus {
@@ -228,7 +229,12 @@ body {
   padding: var(--spacing-md);
   transition: opacity var(--transition-normal), 
               filter var(--transition-normal),
-              background-color var(--transition-normal);
+              background-color var(--transition-normal),
+              box-shadow var(--transition-normal);
+}
+
+.datalayer-item:hover {
+  background-color: var(--color-bg-tertiary);
 }
 
 .datalayer-item:last-child {
