@@ -1,9 +1,9 @@
 // Create the DevTools panel
 chrome.devtools.panels.create(
-  "DataLayer", // Panel title
+  "GTM Inspector", // Panel title
   null, // Icon path (optional)
   "panel.html", // Panel HTML file
   function(panel) {
-    console.log("DataLayer panel created");
+    console.log("GTM Inspector panel created");
   }
 );
