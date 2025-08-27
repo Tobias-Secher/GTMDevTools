@@ -20,7 +20,7 @@ A Chrome DevTools extension for inspecting Google Tag Manager's dataLayer in rea
 1. Clone this repository:
    ```bash
    git clone https://github.com/Tobias-Secher/GTMDevTools.git
-   cd dataLayerDevTools
+   cd GTMDevTools
    ```
 2. Open Chrome and navigate to `chrome://extensions/`
 3. Enable "Developer mode" in the top right
